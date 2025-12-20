@@ -2,6 +2,6 @@
   "name": "line-6-simulator",
   "compatibility_date": "2025-12-20",
   "assets": {
-    "directory": ".svelte-kit/cloudflare"
+    "directory": "build"
   }
 }
