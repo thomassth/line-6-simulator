@@ -314,11 +314,7 @@
         </form>
 
         <div class="results">
-            <div class="output-section">
-                <h2>Speed-Time Chart</h2>
-                <textarea readonly>{JSON.stringify(chartData)}</textarea>
-                <SpeedTimeChart data={chartData} />
-            </div>
+            <SpeedTimeChart data={chartData} />
             <HtmlTable {results} />
             <MarkdownOutput {results} />
         </div>
