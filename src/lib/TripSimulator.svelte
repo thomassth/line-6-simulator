@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { expressSet, ttcSet } from "./data/preset";
+    import { expressSet, ttcDecSet, ttcSet } from "./data/preset";
     import { redLights, stops } from "./data/stops";
     import HtmlTable from "./HtmlTable.svelte";
     import MarkdownOutput from "./MarkdownOutput.svelte";
@@ -46,27 +46,33 @@
             );
             allLocations = loadedLocations;
             selectedLocations = loadedLocations
-                .filter((loc) => expressSet.stations.includes(loc.name))
+                .filter((loc) => expressSet.stations?.includes(loc.name))
                 .map((loc) => loc.name);
         } catch (error) {
             console.error("Failed to load locations:", error);
         }
     });
 
-    function ttcPattern() {
-        selectedLocations = allLocations.map((loc) => loc.name);
-        stopAtRedLights = ttcSet.stopAtRedLights;
-        redLightStopTime = ttcSet.redLightStopTime;
-        topSpeed = ttcSet.topSpeed;
-    }
+    const patternSet = new Map([
+        ["ttc", ttcSet],
+        ["ttc-dec", ttcDecSet],
+        ["express", expressSet],
+    ]);
 
-    function expressPattern() {
-        selectedLocations = allLocations
-            .filter((loc) => expressSet.stations.includes(loc.name))
-            .map((loc) => loc.name);
-        stopAtRedLights = expressSet.stopAtRedLights;
-        redLightStopTime = expressSet.redLightStopTime;
-        topSpeed = expressSet.topSpeed;
+    function applyPattern(pattern: string) {
+        const set = patternSet.get(pattern);
+        if (!set) return;
+        if (set.stations) {
+            selectedLocations = allLocations
+                .filter((loc) => set.stations?.includes(loc.name))
+                .map((loc) => loc.name);
+        } else {
+            selectedLocations = allLocations.map((loc) => loc.name);
+        }
+        stopAtRedLights = set.stopAtRedLights ?? stopAtRedLights;
+        redLightStopTime = set.redLightStopTime ?? redLightStopTime;
+        topSpeed = set.topSpeed ?? topSpeed;
+        stationStopTime = set.stationStopTime ?? stationStopTime;
     }
 
     function simulateTrip(
@@ -230,15 +236,21 @@
 </script>
 
 <main>
-    <h1>Trip Time Simulator</h1>
-
+    <h1>Line 6 Trip Time Simulator</h1>
     <div class="container">
         <form onsubmit={(e) => e.preventDefault()}>
             <div class="locations-container">
                 <h2>Select Locations</h2>
                 <div class="controls">
-                    <button onclick={ttcPattern}>TTC Pattern</button>
-                    <button onclick={expressPattern}>Express Streetcar</button>
+                    <button onclick={() => applyPattern("ttc")}
+                        >TTC Pattern (First day)</button
+                    >
+                    <button onclick={() => applyPattern("ttc-dec")}
+                        >TTC Pattern (Late Dec)</button
+                    >
+                    <button onclick={() => applyPattern("express")}
+                        >Express Streetcar</button
+                    >
                 </div>
                 <div class="locations-grid">
                     {#each allLocations as location (location.name)}
@@ -324,7 +336,7 @@
 <style>
     :root {
         --primary-color: #4a90e2;
-        --secondary-color: #f5a623;
+        --secondary-color: #d13438;
         --background-color: #f8f9fa;
         --card-background: #ffffff;
         --text-color: #333;
@@ -334,22 +346,20 @@
     }
 
     main {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-            Helvetica, Arial, sans-serif;
-        color: var(--text-color);
-        background-color: var(--background-color);
+        font-family:
+            -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+            Arial, sans-serif;
+        /*background-color: var(--background-color);*/
         padding: 2rem;
     }
 
     h1 {
         text-align: center;
-        color: var(--primary-color);
         margin-bottom: 2rem;
         font-size: 2.5rem;
     }
 
     h2 {
-        color: var(--primary-color);
         border-bottom: 2px solid var(--secondary-color);
         padding-bottom: 0.5rem;
         margin-top: 1.5rem;
@@ -371,7 +381,6 @@
 
     form,
     .results {
-        background: var(--card-background);
         padding: 2rem;
         border-radius: var(--border-radius);
         box-shadow: var(--shadow);
@@ -397,7 +406,8 @@
     .location-item {
         display: flex;
         align-items: center;
-        background: #fdfdfd;
+        /*background: #fdfdfd;*/
+        border: 1px solid var(--background-color);
         padding: 0.5rem;
         border-radius: 4px;
     }

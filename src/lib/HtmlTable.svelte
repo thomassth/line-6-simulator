@@ -1,16 +1,16 @@
 <script lang="ts">
-interface Result {
-	station: string;
-	time: number;
-	distance: number;
-}
-const { results }: { results: Result[] } = $props();
+    interface Result {
+        station: string;
+        time: number;
+        distance: number;
+    }
+    const { results }: { results: Result[] } = $props();
 
-function formatTime(sec: number): string {
-	const m = Math.floor(sec / 60);
-	const s = Math.floor(sec % 60);
-	return `${m}m ${s}s`;
-}
+    function formatTime(sec: number): string {
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}m ${s}s`;
+    }
 </script>
 
 <div class="output-section">
@@ -43,7 +43,6 @@ function formatTime(sec: number): string {
 
 <style>
     h2 {
-        color: var(--primary-color);
         border-bottom: 2px solid var(--secondary-color);
         padding-bottom: 0.5rem;
         margin-top: 1.5rem;
@@ -51,6 +50,8 @@ function formatTime(sec: number): string {
     table {
         width: 100%;
         border-collapse: collapse;
+        background: var(--card-background);
+        color: var(--text-color);
     }
 
     th,

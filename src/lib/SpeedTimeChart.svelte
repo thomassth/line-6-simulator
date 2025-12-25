@@ -108,7 +108,6 @@
     }
 
     h2 {
-        color: var(--primary-color);
         border-bottom: 2px solid var(--secondary-color);
         padding-bottom: 0.5rem;
         margin-top: 1.5rem;

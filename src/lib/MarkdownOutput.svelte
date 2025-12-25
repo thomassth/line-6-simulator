@@ -1,28 +1,28 @@
 <script lang="ts">
-interface Result {
-	station: string;
-	time: number;
-	distance: number;
-}
+    interface Result {
+        station: string;
+        time: number;
+        distance: number;
+    }
 
-const { results }: { results: Result[] } = $props();
+    const { results }: { results: Result[] } = $props();
 
-function formatTime(sec: number): string {
-	const m = Math.floor(sec / 60);
-	const s = Math.floor(sec % 60);
-	return `${m}m ${s}s`;
-}
+    function formatTime(sec: number): string {
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}m ${s}s`;
+    }
 
-const markdownOutput = $derived.by(() => {
-	const header = [
-		"| Station | Arrival Time | Total Distance |",
-		"|--------:|--------------|----------------|",
-	];
-	const body = results.map(
-		(r) => `| ${r.station} | ${formatTime(r.time)} | ${r.distance} m |`,
-	);
-	return [...header, ...body].join("\n");
-});
+    const markdownOutput = $derived.by(() => {
+        const header = [
+            "| Station | Arrival Time | Total Distance |",
+            "|--------:|--------------|----------------|",
+        ];
+        const body = results.map(
+            (r) => `| ${r.station} | ${formatTime(r.time)} | ${r.distance} m |`,
+        );
+        return [...header, ...body].join("\n");
+    });
 </script>
 
 <div class="output-section">
@@ -36,7 +36,7 @@ const markdownOutput = $derived.by(() => {
     }
 
     h2 {
-        color: var(--primary-color);
+        /*color: var(--primary-color);*/
         border-bottom: 2px solid var(--secondary-color);
         padding-bottom: 0.5rem;
         margin-top: 1.5rem;
@@ -51,8 +51,8 @@ const markdownOutput = $derived.by(() => {
         transition: box-shadow 0.2s;
         height: 200px;
         resize: vertical;
-        background: #f8f9fa;
-        color: #333;
+        /*background: #f8f9fa;*/
+        /*color: #333;*/
     }
 
     textarea:focus {
