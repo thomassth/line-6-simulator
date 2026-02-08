@@ -31,3 +31,32 @@ export const line5WestwardStops = {
   Keelesdale: 17800,
   "Mount Dennis": 18800,
 };
+
+export const line5EastwardStops = {
+  "Mount Dennis": 0,
+  Keelesdale: 1800,
+  Caledonia: 2600,
+  Fairbank: 3800,
+  Oakwood: 4500,
+  Cedarvale: 5000,
+  "Forest Hill": 5900,
+  Chaplin: 6600,
+  Avenue: 7400,
+  Eglinton: 8200,
+  "Mount Pleasant": 8900,
+  Leaside: 10000,
+  Laird: 11000,
+  "Sunnybrook Park": 12400,
+  "Science Center": 13200,
+  "Aga Khan Park & Museum": 13800,
+  Wynford: 14300,
+  Sloane: 15500,
+  "O'Connor": 16400,
+  Pharmacy: 16800,
+  "Hakimi Lebovic": 17300,
+  "Golden Mile": 17700,
+  Birchmount: 18500,
+  Ionview: 18900,
+  Kennedy: 19600,
+};
+

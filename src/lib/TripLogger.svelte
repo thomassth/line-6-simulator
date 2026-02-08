@@ -1,14 +1,27 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { line6RedLights, line6EastwardStops } from "./data/line-6";
-    import { line5RedLights, line5WestwardStops } from "./data/line-5";
-    let selectedLine = $state<string>("line-5");
+    import {
+        line5RedLights,
+        line5WestwardStops,
+        line5EastwardStops,
+    } from "./data/line-5";
+    let selectedLine = $state<string>("line-5-w");
     const redLights = $derived(
         selectedLine === "line-6" ? line6RedLights : line5RedLights,
     );
-    const stops = $derived(
-        selectedLine === "line-6" ? line6EastwardStops : line5WestwardStops,
-    );
+    const stops = $derived.by(() => {
+        if (selectedLine === "line-5-w") {
+            return line5WestwardStops;
+        }
+        if (selectedLine === "line-6") {
+            return line6EastwardStops;
+        }
+        if (selectedLine === "line-5-e") {
+            return line5EastwardStops;
+        }
+        return line5WestwardStops;
+    });
 
     const allLocations = $derived(
         Object.entries(stops).map(([name, distance]) => ({
@@ -124,7 +137,10 @@
     <div class="container">
         <form onsubmit={(e) => e.preventDefault()}>
             <select id="line-data" required bind:value={selectedLine}>
-                <option value="line-5">Line 5 Eglinton</option>
+                <option value="line-5-e">Line 5 Eglinton (To Kennedy)</option>
+                <option value="line-5-w"
+                    >Line 5 Eglinton (To Mount Dennis)</option
+                >
                 <option value="line-6">Line 6 Finch West</option>
             </select>
         </form>
