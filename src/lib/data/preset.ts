@@ -6,7 +6,7 @@ export interface Preset {
   stationStopTime?: number;
 }
 
-export const expressSet: Preset = {
+export const line6ExpressSet: Preset = {
   stations: [
     "Humber College",
     "Martin Grove",
@@ -31,5 +31,12 @@ export const ttcDecSet: Preset = {
   stopAtRedLights: true,
   redLightStopTime: 20,
   topSpeed: 30,
+  stationStopTime: 20,
+};
+
+export const ttc5EstSet: Preset = {
+  stopAtRedLights: true,
+  redLightStopTime: 20,
+  topSpeed: 37,
   stationStopTime: 20,
 };

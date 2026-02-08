@@ -10,7 +10,7 @@
 
 <nav>
     <a href="https://tobus.ca">back to TO Bus</a>
-    <a href="/line-6">line 6 simulator</a>
+    <!-- <a href="/line-6">line 6 simulator</a> -->
 </nav>
 {@render children()}
 

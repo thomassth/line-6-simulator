@@ -1,9 +1,17 @@
 <script lang="ts">
-    import { expressSet, ttcDecSet, ttcSet } from "./data/preset";
-    import { redLights, stops } from "./data/stops";
+    import {
+        line6ExpressSet,
+        ttcDecSet,
+        ttcSet,
+        ttc5EstSet,
+    } from "./data/preset";
+    import { line6RedLights, line6EastwardStops } from "./data/line-6";
+    import { line5RedLights, line5WestwardStops } from "./data/line-5";
+
     import HtmlTable from "./HtmlTable.svelte";
     import MarkdownOutput from "./MarkdownOutput.svelte";
     import SpeedTimeChart from "./SpeedTimeChart.svelte";
+    import RouteDiagram from "./RouteDiagram.svelte";
 
     interface Location {
         name: string;
@@ -27,6 +35,8 @@
     }
 
     let allLocations = $state<Location[]>([]);
+    let selectedLine = $state<string>("line-5");
+    let selectedPattern = $state<string>("ttc-line-5-est");
     let selectedLocations = $state<string[]>([]);
     let topSpeed = $state(60);
     let accelTime = $state(20);
@@ -34,6 +44,13 @@
     let stationStopTime = $state(30);
     let redLightStopTime = $state(20);
     let stopAtRedLights = $state(false);
+
+    const redLights = $derived(
+        selectedLine === "line-6" ? line6RedLights : line5RedLights,
+    );
+    const stops = $derived(
+        selectedLine === "line-6" ? line6EastwardStops : line5WestwardStops,
+    );
 
     $effect(() => {
         try {
@@ -46,7 +63,7 @@
             );
             allLocations = loadedLocations;
             selectedLocations = loadedLocations
-                .filter((loc) => expressSet.stations?.includes(loc.name))
+                // .filter((loc) => line6ExpressSet.stations?.includes(loc.name))
                 .map((loc) => loc.name);
         } catch (error) {
             console.error("Failed to load locations:", error);
@@ -56,8 +73,16 @@
     const patternSet = new Map([
         ["ttc", ttcSet],
         ["ttc-dec", ttcDecSet],
-        ["express", expressSet],
+        ["ttc-line-5-est", ttc5EstSet],
+        ["line-6-express", line6ExpressSet],
     ]);
+
+    $effect(() => {
+        const selectedSet = patternSet.get(selectedPattern);
+        if (selectedSet) {
+            applyPattern(selectedPattern);
+        }
+    });
 
     function applyPattern(pattern: string) {
         const set = patternSet.get(pattern);
@@ -212,8 +237,14 @@
         return { results: newResults, chartData: newChartData };
     }
 
+    function formatTime(sec: number): string {
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}m ${s}s`;
+    }
+
     const simulationOutput = $derived.by(() => {
-        if (allLocations.length === 0) {
+        if (!selectedLine || allLocations.length === 0) {
             return { results: [], chartData: [] };
         }
         const checkedLocations = allLocations.filter((loc) =>
@@ -236,23 +267,42 @@
 </script>
 
 <main>
-    <h1>Line 6 Trip Time Simulator</h1>
+    <h1>TTC LRT Trip Time Simulator</h1>
     <div class="container">
         <form onsubmit={(e) => e.preventDefault()}>
+            <select id="line-data" required bind:value={selectedLine}>
+                <option value="line-5">Line 5 Eglinton</option>
+                <option value="line-6">Line 6 Finch West</option>
+            </select>
             <div class="locations-container">
                 <h2>Select Locations</h2>
                 <div class="controls">
-                    <button onclick={() => applyPattern("ttc")}
-                        >TTC Pattern (First day)</button
+                    <button
+                        onclick={() => {
+                            selectedPattern = "ttc";
+                        }}
                     >
-                    <button onclick={() => applyPattern("ttc-dec")}
-                        >TTC Pattern (Late Dec)</button
+                        Line 6 Pattern (First day)
+                    </button>
+                    <button
+                        onclick={() => {
+                            selectedPattern = "ttc-dec";
+                        }}
                     >
-                    <button onclick={() => applyPattern("express")}
-                        >Express Streetcar</button
+                        Line 6 Pattern (Late Dec)
+                    </button>
+                    <button
+                        onclick={() => {
+                            selectedPattern = "ttc-line-5-est";
+                        }}
                     >
+                        Line 5 Pattern (GTFS)
+                    </button>
+                    <!-- <button onclick={() => {selectedPattern = "line-6-express"}}>
+                        Express Streetcar
+                    </button> -->
                 </div>
-                <div class="locations-grid">
+                <!-- <div class="locations-grid">
                     {#each allLocations as location (location.name)}
                         <div class="location-item">
                             <input
@@ -264,11 +314,11 @@
                             <label for={location.name}>{location.name}</label>
                         </div>
                     {/each}
-                </div>
+                </div> -->
             </div>
 
-            <div class="parameters">
-                <h2>Parameters</h2>
+            <details class="parameters">
+                <summary><h2>Parameters</h2></summary>
                 <label for="topSpeed">Top speed (km/h)</label>
                 <input
                     id="topSpeed"
@@ -322,10 +372,23 @@
                         step="0.1"
                     />
                 {/if}
-            </div>
+            </details>
         </form>
 
         <div class="results">
+            {#if results.length > 0}
+                <h2>
+                    In these conditions, the trip will take {formatTime(
+                        results?.[results.length - 1].time,
+                    )}
+                </h2>
+            {/if}
+            <RouteDiagram
+                {stops}
+                {results}
+                {selectedLocations}
+                {selectedLine}
+            />
             <SpeedTimeChart data={chartData} />
             <HtmlTable {results} />
             <MarkdownOutput {results} />
@@ -359,6 +422,14 @@
         font-size: 2.5rem;
     }
 
+    summary {
+        display: flex;
+
+        h2 {
+            width: 100%;
+        }
+    }
+
     h2 {
         border-bottom: 2px solid var(--secondary-color);
         padding-bottom: 0.5rem;
@@ -375,13 +446,13 @@
 
     @media (min-width: 992px) {
         .container {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr 4fr;
         }
     }
 
     form,
     .results {
-        padding: 2rem;
+        min-width: 0;
         border-radius: var(--border-radius);
         box-shadow: var(--shadow);
     }
@@ -390,6 +461,7 @@
         display: flex;
         gap: 1rem;
         margin-bottom: 1.5rem;
+        flex-wrap: wrap;
     }
 
     .locations-grid {
@@ -423,7 +495,8 @@
         font-weight: bold;
     }
 
-    input[type="number"] {
+    input[type="number"],
+    select {
         width: 100%;
         padding: 0.75rem;
         border: 1px solid var(--light-gray);

@@ -8,6 +8,9 @@
     --link-hover: #3492e5;
     --link-active: #176bb5;
 }*/
+* {
+    box-sizing: border-box;
+}
 html {
     --bg-1: #2e2e2e;
     --bg-2: #4d4d4d;
