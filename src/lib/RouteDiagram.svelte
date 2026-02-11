@@ -143,36 +143,86 @@
 
     let svgElement: SVGElement;
 
-    function downloadPng() {
+    async function shareDiagram() {
         if (!svgElement) {
             return;
         }
-        const svgData = new XMLSerializer().serializeToString(svgElement);
-        const canvas = document.createElement('canvas');
-        const svgSize = svgElement.getBoundingClientRect();
-        canvas.width = svgSize.width;
-        canvas.height = svgSize.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            return;
-        }
 
-        const img = new Image();
-        img.onload = () => {
-            ctx.drawImage(img, 0, 0);
-            const url = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'route-diagram.png';
-            link.click();
-        };
-        img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        try {
+            const blob = await new Promise<Blob | null>((resolve, reject) => {
+                const svgData = new XMLSerializer().serializeToString(
+                    svgElement,
+                );
+                const canvas = document.createElement("canvas");
+                const svgSize = svgElement.getBoundingClientRect();
+                canvas.width = svgSize.width;
+                canvas.height = svgSize.height;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) {
+                    reject(new Error("Could not create canvas context"));
+                    return;
+                }
+
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0);
+                    canvas.toBlob((b) => resolve(b), "image/png");
+                };
+                img.onerror = (e) => reject(e);
+                img.src = "data:image/svg+xml;base64," + btoa(svgData);
+            });
+
+            if (!blob) return;
+
+            const file = new File([blob], "route-diagram.png", {
+                type: "image/png",
+            });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: "Route Diagram",
+                });
+            } else {
+                // Fallback if sharing is not supported
+                downloadBlob(blob);
+            }
+        } catch (error) {
+            if ((error as Error).name !== "AbortError") {
+                console.error("Error sharing or generating image", error);
+                // Try to download if sharing failed (but not if aborted by user)
+                if (
+                    (error as Error).message &&
+                    !(error as Error).message.includes("share")
+                ) {
+                    // If error wasn't strictly about sharing (e.g. generation failed), we might not want to download.
+                    // But if it was a share error that isn't abort, maybe download?
+                    // Let's stick to the previous behavior: if canShare was false, we download.
+                    // If share() threw, we usually don't want to force download as the user might have cancelled or it failed.
+                }
+            }
+        }
+    }
+
+    function downloadBlob(blob: Blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "route-diagram.png";
+        link.click();
+        URL.revokeObjectURL(url);
     }
 </script>
 
 <div class="route-diagram">
     <div class="svg-container">
-        <svg bind:this={svgElement} width={svgWidth * 2} height="300" style="background-color:white" viewBox={`-10 0 ${svgWidth} 150`}>
+        <svg
+            bind:this={svgElement}
+            width={svgWidth * 2}
+            height="300"
+            style="background-color:white"
+            viewBox={`-10 0 ${svgWidth} 150`}
+        >
             <!-- Main line -->
             <line
                 x1={svgPadding}
@@ -262,8 +312,8 @@
             {/each}
         </div>
     </div>
+    <button onclick={shareDiagram}>Share</button>
 </div>
-<button onclick={downloadPng}>Download PNG</button>
 
 <style>
     .route-diagram {
