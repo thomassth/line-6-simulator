@@ -140,11 +140,39 @@
         }
         return segments;
     });
+
+    let svgElement: SVGElement;
+
+    function downloadPng() {
+        if (!svgElement) {
+            return;
+        }
+        const svgData = new XMLSerializer().serializeToString(svgElement);
+        const canvas = document.createElement('canvas');
+        const svgSize = svgElement.getBoundingClientRect();
+        canvas.width = svgSize.width;
+        canvas.height = svgSize.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+            const url = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'route-diagram.png';
+            link.click();
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+    }
 </script>
 
 <div class="route-diagram">
     <div class="svg-container">
-        <svg width={svgWidth} height="150">
+        <svg bind:this={svgElement} width={svgWidth * 2} height="300" style="background-color:white" viewBox={`-10 0 ${svgWidth} 150`}>
             <!-- Main line -->
             <line
                 x1={svgPadding}
@@ -235,6 +263,7 @@
         </div>
     </div>
 </div>
+<button onclick={downloadPng}>Download PNG</button>
 
 <style>
     .route-diagram {
