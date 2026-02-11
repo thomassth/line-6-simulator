@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Chart } from "chart.js";
+    import type { Chart, ChartOptions } from "chart.js";
     import { onDestroy, onMount } from "svelte";
 
     interface ChartDataPoint {
@@ -7,7 +7,10 @@
         y: number;
         isTopSpeed?: boolean;
     }
-    const { data }: { data: ChartDataPoint[] } = $props();
+    const {
+        data,
+        selectedLine,
+    }: { data: ChartDataPoint[]; selectedLine?: string } = $props();
 
     let chartCanvas: HTMLCanvasElement;
     let chartInstance: Chart | null = null;
@@ -16,14 +19,46 @@
         const { Chart: ChartJS, registerables } = await import("chart.js/auto");
         ChartJS.register(...registerables);
 
-        if (chartCanvas) {
+        if (chartCanvas && data) {
             const chartData = data.map((point) => ({
                 ...point,
                 x: point.x / 60,
             }));
 
+            const xValues = chartData.map((d) => d.x);
+            const xMin = xValues.length > 0 ? Math.min(...xValues) : 0;
+            const xMax = xValues.length > 0 ? Math.max(...xValues) : 0;
+
+            const options: ChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: "linear",
+                        title: {
+                            display: true,
+                            text: "Time (minutes)",
+                        },
+                        reverse: selectedLine === "line-5",
+                        min: xMin,
+                        max: xMax,
+                    },
+                    y: {
+                        title: { display: true, text: "Speed (km/h)" },
+                        min: 0,
+                        max: 60,
+                    },
+                },
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                },
+            };
+
             if (chartInstance) {
                 chartInstance.data.datasets[0].data = chartData;
+                chartInstance.options = options;
                 chartInstance.update();
             } else {
                 chartInstance = new ChartJS(chartCanvas, {
@@ -48,24 +83,7 @@
                             },
                         ],
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                type: "linear",
-                                title: {
-                                    display: true,
-                                    text: "Time (minutes)",
-                                },
-                            },
-                            y: {
-                                title: { display: true, text: "Speed (km/h)" },
-                                min: 0,
-                                max: 60,
-                            },
-                        },
-                    },
+                    options: options,
                 });
             }
         }
@@ -90,6 +108,7 @@
 
 <div class="output-section">
     <h2>Speed-Time Chart</h2>
+    <p>🔴 Red area = not reaching the top speed before deceleration</p>
     <div
         class="chart-container"
         style="position: relative; height: 400px; width: 100%;"

@@ -389,7 +389,7 @@
                 {selectedLocations}
                 {selectedLine}
             />
-            <SpeedTimeChart data={chartData} />
+            <SpeedTimeChart data={chartData} {selectedLine} />
             <HtmlTable {results} />
             <MarkdownOutput {results} />
         </div>
@@ -409,9 +409,8 @@
     }
 
     main {
-        font-family:
-            -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-            Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            Helvetica, Arial, sans-serif;
         /*background-color: var(--background-color);*/
         padding: 2rem;
     }
