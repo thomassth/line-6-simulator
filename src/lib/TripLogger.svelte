@@ -89,6 +89,7 @@
     const tripData = $derived.by(() => {
         let lastTime = 0;
         let totalTime = 0;
+        let lastDistance = 0;
         const data = [];
         for (const stop of allLocations) {
             const time = storedTime[stop.name];
@@ -109,12 +110,14 @@
             if (lastTime !== 0) {
                 const timeBetween = timeInMinutes - lastTime;
                 totalTime += timeBetween;
+                const distanceFromLastRecord = stop.distance - lastDistance;
+                lastDistance = stop.distance;
                 data.push({
                     name: stop.name,
                     time: time,
                     timeBetween: `${timeBetween} min`,
                     totalTime: `${totalTime} min`,
-                    avgSpeed: `${(stop.distance / 1000 / (totalTime / 60)).toFixed(2)} km/h`,
+                    avgSpeed: `${(distanceFromLastRecord / 1000 / (timeBetween / 60)).toFixed(2)} km/h`,
                 });
             } else {
                 data.push({
