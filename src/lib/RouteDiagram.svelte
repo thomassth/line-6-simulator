@@ -249,16 +249,16 @@
                         2}
                     <!-- Background of text -->
                     <rect
-                        x={x - 15}
-                        y="44"
-                        width="30"
-                        height="14"
+                        x={x - 10}
+                        y="45"
+                        width="20"
+                        height="10"
                         fill="rgba(255,255,255,0.5)"
                         rx="2"
                         ry="2"
                     />
                     <!-- Text -->
-                    <text {x} y="54" text-anchor="middle" font-size="10">
+                    <text {x} y="54" text-anchor="middle" font-size="8">
                         {segment.minutes.toFixed(1)}
                     </text>
                 {/if}
@@ -293,7 +293,7 @@
         </svg>
     </div>
     <div class="legend">
-        <p>Est speed (km/h)</p>
+        <p>Section speed (km/h)</p>
         <div class="legend-bar">
             {#each thresholdsInLegend as threshold, i}
                 {#if i < thresholdsInLegend.length - 1}
